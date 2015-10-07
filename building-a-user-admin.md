@@ -7,14 +7,14 @@ Before we dive into the code, we'll need to add the following packages to our pr
 meteor add alanning:roles
 ```
 
-We'll rely on the [alanning:roles]() package to help us define different roles (types) for our users. This will allow us to control which users have access to certain types of content in our application.
+We'll rely on the [alanning:roles](https://atmospherejs.com/alanning/roles) package to help us define different roles (types) for our users. This will allow us to control which users have access to certain types of content in our application.
 
 <p class="block-header">Terminal</p>
 
 ```bash
 meteor add random
 ```
-To make our invitations unique and difficult to "spoof," we'll rely on the [random]() package to create a random token that we can send to invitees to verify their identity.
+To make our invitations unique and difficult to "spoof," we'll rely on the [random](https://atmospherejs.com/meteor/random) package to create a random token that we can send to invitees to verify their identity.
 
 <p class="block-header">Terminal</p>
 
@@ -22,14 +22,14 @@ To make our invitations unique and difficult to "spoof," we'll rely on the [rand
 meteor add email
 ```
 
-In order to get our invitations sent, we'll rely on the [email]() package.
+In order to get our invitations sent, we'll rely on the [email](https://atmospherejs.com/meteor/email) package.
 
 <p class="block-header">Terminal</p>
 
 ```bash
 meteor add momentjs:moment
 ```
-When we display invitations in the user dashboard, we'll use [momentjs:moment]() to help us make the date our invitation was sent a little more human readable.
+When we display invitations in the user dashboard, we'll use [momentjs:moment](https://atmospherejs.com/momentjs/moment) to help us make the date our invitation was sent a little more human readable.
 
 <div class="note">
   <h3>Additional Packages <i class="fa fa-warning"></i></h3>
@@ -90,20 +90,20 @@ let InvitationsSchema = new SimpleSchema({
 Invitations.attachSchema( InvitationsSchema );
 ```
 
-Woah! Lots of stuff, but this is pretty straightforward. First, we start by creating a new collection and assing it to a global variable `Invitations` that we can access throughout our application. Easy peasy.
+Woah! Lots of stuff, but this is pretty straightforward. First, we start by creating a new collection and passing it to a global variable `Invitations` that we can access throughout our application. Easy peasy.
 
 Next, we make sure to lock down database collections on the client. Here, we set all of our `allow` rules for the `Invitations` collection to `false` meaning "don't allow this," and all of our `deny` rules for the collection to `true` meaning deny this. What does this accomplish? While allow and deny rules are neat, they leave room for unintended security holes in our application.
 
-To save face, we can "lock down" all of our rules when we define our collection to prevent any client-side database operations from taking place. This means that when we interact with the database, we're required to do it from the server (a trusted environment).
+To save face, we can "lock down" all of our rules when we define our collection to prevent any client-side database operations from taking place. This means that when we interact with the database, we're required to do it from the server (a trusted environment) via methods.
 
-Last up, we define a schema for our collection [using the aldeed:collection2 package](). Here, we specify the exact structure of the data we plan to insert into our collection along with the _types_ (e.g. `String`) those pieces of data will use. We do this because it helps us to block unwanted data from being added to the database. 
+Last up, we define a schema for our collection [using the aldeed:collection2 package](http://themeteorchef.com/snippets/using-the-collection2-package/). Here, we specify the exact structure of the data we plan to insert into our collection along with the _types_ (e.g. `String`) those pieces of data will use. We do this because it helps us to block unwanted data from being added to the database.
 
 For example, if we attempt to call `Invitations.insert( { taco: "vegetarian" } );`, the insert would fail because `taco` is not a field defined in our schema. Conversely, if we were to call `Invitations.insert( { email: 123456 } );` instead, our insert would _also_ fail because the `email` field is expecting a `String` value, not a `Number` value. Making sense?
 
 At the bottom of our file, we use the `attachSchema` method we get from the `collection2` package to assign the schema we defined above to our collection. Sweet! With this in place, our collection is all set up. We're going to put this on the shelf for now, though, and focus on setting up our routes. Seriously? Yes. Don't worry, this is going to be...interesting. Prepare to be amused!
 
 ### Setting up our routes
-For this recipe, we're relying on the latest version of [Base](http://themeteorchef.com/base), the starter kit used for recipes on The Meteor Chef. Before `v3.0.0` of the kit, we relied on [Iron Router]() for defining our routes. Now—keeping in stride with the Meteor community—Base relies on [Flow Router](http://themeteorchef.com/snippets/client-side-routing-with-flow-router). 
+For this recipe, we're relying on the latest version of [Base](http://themeteorchef.com/base), the starter kit used for recipes on The Meteor Chef. Before `v3.0.0` of the kit, we relied on [Iron Router](https://github.com/iron-meteor/iron-router) for defining our routes. Now—keeping in stride with the Meteor community—Base relies on [Flow Router](http://themeteorchef.com/snippets/client-side-routing-with-flow-router). 
 
 Flow Router is a bit different from Iron Router in that it takes a more minimalist approach to routing. This means that things like rendering templates and defining `{{pathFor}}` helpers are up to us. Don't let that spook ya. The bulk of the work has already been done as a part of Base, but we'll step through setting up routes here and talking about how they work. 
 
@@ -130,17 +130,17 @@ publicRoutes.route( '/invite/:token', {
 [...]
 ```
 
-Here, we see two things happening. First, we set up a group using Flow Router's [groups]() feature which allows us to—like the name implies—group our routes together. Here, we're separating our `public` routes (the one's we're allowing anyone to access) off by creating a new group and assingning it to the variable `publicRoutes`. Inside, we define two properties: `name` and `triggersEnter`. The first is pretty obvious; the name (or label) for our group. The second one, though, `triggersEnter` is a bit odd. What's that? This property allows us to define an array of functions to be called before all of the routes in our `public` group.
+Here, we see two things happening. First, we set up a group using Flow Router's [groups](https://github.com/kadirahq/flow-router#group-routes) feature which allows us to—like the name implies—group our routes together. Here, we're separating our `public` routes (the one's we're allowing anyone to access) off by creating a new group and assingning it to the variable `publicRoutes`. Inside, we define two properties: `name` and `triggersEnter`. The first is pretty obvious; the name (or label) for our group. The second one, though, `triggersEnter` is a bit odd. What's that? This property allows us to define an array of functions to be called before all of the routes in our `public` group.
 
 For our purposes, we have just one trigger defined. Hold that in the back of your mind, though. Let's get our public route for this recipe defined and come back this in a bit. Pay attention to the syntax here. We start by calling `publicRoutes.route()` to assign our new route to the `publicRoutes` group. If this were a standalone route, we'd call `FlowRouter.route()`. 
 
 As the first argument, we pass the path for our URL relative to our applications' domain (e.g. `http://localhost:3000/invite/:token`). Inside of our path, we define a parameter `:token` that will allow us to pass a dynamic value along with this URL. As we'll see in a bit, this will be used to pass the invitation token we dynamically generate and send to new users.
 
-As the second argument, we pass an object with two properties: `name` and `action()`. Again, the first hear should be pretty clear; this is the name we can use to reference our route elsewhere in the applicaiton. The `action()` part is what really separates Flow Router from Iron Router. Here, instead of just passing the name of the template we want to render (like we would with Iron Router's `template` paramater), here, we make a call to `BlazeLayout.render()`. What's that? 
+As the second argument, we pass an object with two properties: `name` and `action()`. Again, the first argument here should be pretty clear; this is the name we can use to reference our route elsewhere in the applicaiton. The `action()` part is what really separates Flow Router from Iron Router. Here, instead of just passing the name of the template we want to render (like we would with Iron Router's `template` paramater), here, we make a call to `BlazeLayout.render()`. What's that? 
 
 As part of the design philosophy behind Flow Router, the intent was to separate anything that didn't have to immediately deal with routing from the router. Here, `BlazeLayout.render()` compensates for the separation of rendering our Blaze templates from the router. This method is given to us by a separate package included with Base called `kadira:blaze-layout`. It's job is simply to render Blaze templates into the location we specify. It takes two arguments: a `layout` template in the first slot and an object containing the names of "zones" where we'll render the specified template. In this case, we're telling Flow Router to use the `default` layout template and to render our `invite` template to the `yield` zone. Note that we've defined `yield` as the name of the zone. Real quick, let's hop over to our `default` template to see how this works.
 
-<p class="block-header">/client/templates/layouts/defaut.html</p>
+<p class="block-header">/client/templates/layouts/default.html</p>
 
 ```markup
 <template name="default">
@@ -150,7 +150,7 @@ As part of the design philosophy behind Flow Router, the intent was to separate 
   </div>
 </template>
 ```
-To handle our rendering, Flow Router relies on Meteor's [dynamic templates]() feature. Notice that here, we simply specify a `template` property and set it equal to `yield`. What this translates to is whatever template we assign to the `yield` zone in our route's `action()` method will be rendered in place of this `{{> Template.dynamic}}` include. Seeing the flow (no pun intended)? With this in place, whenever we visit `http://localhost:3000/invite/:token`, we'll see our `invite` template rendered. Cool! Next, let's take a look at our `authenticated` routes.
+To handle our rendering, Flow Router relies on Meteor's [dynamic templates](http://themeteorchef.com/snippets/using-dynamic-templates) feature. Notice that here, we simply specify a `template` property and set it equal to `yield`. What this translates to is whatever template we assign to the `yield` zone in our route's `action()` method will be rendered in place of this `{{> Template.dynamic}}` include. Seeing the flow (no pun intended)? With this in place, whenever we visit `http://localhost:3000/invite/:token`, we'll see our `invite` template rendered. Cool! Next, let's take a look at our `authenticated` routes.
 
 #### Authenticated routes
 For our `authenticated` routes, we're going to follow a similar pattern to our `public` routes. Let's take a look.
@@ -194,7 +194,7 @@ Notice that aside from our `action()` method's, on our `users` and `managers` ro
 Okay, with these in place, we're ready to start working with our users and get our first taste of using the `roles` package. To get started there, we're going to handle adding some administrative and test users to our app so that we can get around without the need for a sign up page (or adding users in the terminal).
 
 ### Adding administrators and test users
-Most of our work here is already done for us as a part of [Base](). Aren't I nice? Truthfully, we only need to make two small edits to what's included. Let's take a look.
+Most of our work here is already done for us as a part of [Base](http://themeteorchef.com/base). Aren't I nice? Truthfully, we only need to make two small edits to what's included. Let's take a look.
 
 <p class="block-header">/server/modules/generate-accounts.js</p>
 
@@ -240,21 +240,21 @@ let _checkIfAdmin = ( email ) => {
 Modules.server.generateAccounts = generateAccounts;
 ```
 
-Woah smokies. Yes, this file has a lot going on. We're going to glaze over the bulk of it as it's something that's included in Base but the gist is this: when called from our server's `startup.js` file, if no user's exist in the database, create each of the accounts listed in the `administrators` array at the top of the file as well as the number of "fake" or test accounts we specify in the `generateAccounts` method (not displayed here). Woof.
+Woah smokies. Yes, this file has a lot going on. We're going to glaze over the bulk of it as it's something that's included in Base but the gist is this: when called from our server's `startup.js` file, if no users exist in the database, create each of the accounts listed in the `administrators` array at the top of the file as well as the number of "fake" or test accounts we specify in the `generateAccounts` method (not displayed here). Woof.
 
-It's not as scary as it sounds. It _is_ however a pain in the butt to do this every time we write an application, so this module is offered up as a way to automate this for you. Sweet! The part we really care about in this file happens in the `_createUsers` function. Here, we loop through all of the user's that get passed to our `_createUsers` function—we call this twice, once for admins and once for test users—and create their accounts in the database. For our recipe, the modification we've made is in the `if ( isAdmin ) {}` block toward the bottom. 
+It's not as scary as it sounds. It _is_ however a pain in the butt to do this every time we write an application, so this module is offered up as a way to automate this for you. Sweet! The part we really care about in this file happens in the `_createUsers` function. Here, we loop through all of the users that get passed to our `_createUsers` function—we call this twice, once for admins and once for test users—and create their accounts in the database. For our recipe, the modification we've made is in the `if ( isAdmin ) {}` block toward the bottom. 
 
 Here, we make a check using another function `_checkIfAdmin` that looks in the `adminstrators` array for the email we pass (the user being looped over) to see if it exists. If this value returns `true`, we rely on the `Roles.setUserRoles()` method we get from the `roles` package to set the `admin` role on the user, and if the value returns `false`, we set the `employee` role. Keep in mind this is a simplification and your own application might require something a bit more complex. Fear not, next we'll build an interface that will make it easy to change these roles.
 
 <div class="note">
   <h3>What's with this pattern? <i class="fa fa-warning"></i></h3>
-  <p>You may be wondering why our code is split up into little functions like this. Here, we're relying on the <a href="themeteorchef.com/snippets/using-the-module-pattern-with-meteor">module pattern</a> to simplify our code and make it a bit easier to read. Doing this, it makes it much easier to both write and read our code as a series of "steps" instead of one big ball of code. You don't have to do this, but it's a handy tool to master if you find your code getting a bit squirrely.</p>
+  <p>You may be wondering why our code is split up into little functions like this. Here, we're relying on the <a href="http://themeteorchef.com/snippets/using-the-module-pattern-with-meteor">module pattern</a> to simplify our code and make it a bit easier to read. Doing this, it makes it much easier to both write and read our code as a series of "steps" instead of one big ball of code. You don't have to do this, but it's a handy tool to master if you find your code getting a bit squirrely.</p>
 </div>
 
 With this in place, let's start to focus on our templates. There's just one that's complicated, the others will just act as placeholders.
 
 ### Setting up our templates
-We have four templates we need to set up: `users`, `managers`, `employees`, and `sendInvitationModal`. We'll do these in order of easiest to most complicated. Once these are in place, we'll have everything we need for logged in users. From there, we'll be able to add a bit of authentication using roles to start routing user's to the correct templates based on their roles.
+We have four templates we need to set up: `users`, `managers`, `employees`, and `sendInvitationModal`. We'll do these in order of easiest to most complicated. Once these are in place, we'll have everything we need for logged in users. From there, we'll be able to add a bit of authentication using roles to start routing users to the correct templates based on their roles.
 
 #### The easy templates
 To showcase our authentication working later, we're going to need to set up two templates now for users that will be assigned to the `manager` and `employee` roles. Just six lines of code between them. Let's take a look.
@@ -275,7 +275,7 @@ To showcase our authentication working later, we're going to need to set up two 
 </template>
 ```
 
-Pretty simple, yeah? Here, we've simply defined two templates that will act as placeholders later. We won't fill these in, but we will use them to verify that we've correctly routed our users based on their permissions. Underwhelming for now, so just keep these in the back of your mind. Next is the bug one: `users`. We've got a lot to work to do here, so let's get to it.
+Pretty simple, yeah? Here, we've simply defined two templates that will act as placeholders later. We won't fill these in, but we will use them to verify that we've correctly routed our users based on their permissions. Underwhelming for now, so just keep these in the back of your mind. Next is the big one: `users`. We've got a lot to work to do here, so let's get to it.
 
 #### The `users` template
 Our `users` template will support two primary actions: showing a list of the current users in our application and showing a list of invitations that we've sent out to new users (that haven't been accepted yet). Let's start by getting our list of _current_ users working.
@@ -357,7 +357,7 @@ Template.users.helpers({
 [...]
 ```
 
-In the logic for our `users` template, we first subscribe to the `users` publication we just defined in our `onreated` callback. Next, we wire up a helper to return the list of users in our application by calling `Meteor.users.find();`. Why aren't we passing a `fields` filter here? Because we've already filtered our data at the publication-level, when we call `Meteor.users.find()` from the client, we can be sure that all of the records we have access to are already filtered! Pretty neat. The rest is simple, here. If we have users, return them.
+In the logic for our `users` template, we first subscribe to the `users` publication we just defined in our `onCreated` callback. Next, we wire up a helper to return the list of users in our application by calling `Meteor.users.find();`. Why aren't we passing a `fields` filter here? Because we've already filtered our data at the publication-level, when we call `Meteor.users.find()` from the client we can be sure that all of the records we have access to are already filtered! Pretty neat. The rest is simple, here. If we have users, return them.
 
 Back in our template, we should be able to see the administrator and test users we set up earlier.
 
@@ -366,7 +366,7 @@ Back in our template, we should be able to see the administrator and test users 
   <figcaption>Our user's list.</figcaption>
 </figure>
 
-Neat! Keep in mind, because our user's are being randomly generated, if you're following along you may notice that your users—aside from `admin@admin.com`—are different. This is expected! The point is that we can see them and that their roles are marked as `Employee` in the dropdown. Wait...how is this just working? Ah, ha! Real quick, let's look at our `users` template again, paying attention to the output in the loop.
+Neat! Keep in mind, because our user's are being randomly generated, if you're following along you may notice that your users—aside from `admin@admin.com`—are different. This is expected! The point is that we can see them and that their roles are marked as `Employee` in the dropdown. Wait, how is this just...working? Ah, ha! Real quick, let's look at our `users` template again, paying attention to the output in the loop.
 
 <p class="block-header">/client/templates/authenticated/users.html</p>
 
@@ -423,7 +423,7 @@ Template.registerHelper( 'selected', ( v1, v2 ) => {
 });
 ```
 
-Not much too them. The first, `isCurrentUser` simply check to see if the ID passed to the helper as `currentUser` is equal to the ID of the currently logged in user. If it is, then the helper returns `true` revealing a label next to the user in the list that reads `You!` denoting the current user. This isn't necessary, but it's a nice UX touch for our users.
+Not much to them. The first, `isCurrentUser` simply checks to see if the ID passed to the helper as `currentUser` is equal to the ID of the currently logged in user. If it is, then the helper returns `true` revealing a label next to the user in the list that reads `You!` denoting the current user. This isn't necessary, but it's a nice UX touch for our users.
 
 Next up, we have `disableIfAdmin`. This does a similar check to `isCurrentuser` first, seeing if the user ID passed is equal to the currently logged in user's ID. If it is, we perform a check using the `userIsInRole` method we get from the `roles` package to see if the `userId` passed is in the `admin` category. If they _are_—meaning the current user is an administrator—we output `disabled` as an attribute on the `<select></select>` input where we change the user's role. Why? This is just a safety precaution so that administrators don't accidently lock themselves out of the application. Nice! 
 
@@ -582,7 +582,7 @@ This is about as simple as it gets! We simply take the passed `_id`, check its t
 </template>
 ```
 
-Here, we have the modal window that we reveal when clicking the green `Send Invitation` button that's displayed at the top right-hand corner of our "Invitations" list. Here, we simply collect two pieces of information: an email address and the role we wish to apply to our new user. The goal here is to simplify new signups. Instead of requiring users to fill out a bunch of information, we can simply send them an email with a unqiue token that already knows what they need. They simply fill out a password and click "Create Account." Let's look at the wiring for this and how our users finally get their email.
+Here, we have the modal window that we reveal when clicking the green `Send Invitation` button that's displayed at the top right-hand corner of our "Invitations" list. Here, we simply collect two pieces of information: an email address and the role we wish to apply to our new user. The goal here is to simplify new signups. Instead of requiring users to fill out a bunch of information, we can simply send them an email with a unqiue token that already knows who they are and what they need. They simply fill out a password and click "Create Account." Let's look at the wiring for this and how our users finally get their email.
 
 #### Wiring up invitations
 The first step we need to take is handling the submission of this modal. Over in our modal's logic file:
@@ -688,9 +688,9 @@ Next, we call to a function `_prepareEmail` which we use to do two three things:
 
 1. Grab the `domain` value from our [`settings-<environment>.js`](http://themeteorchef.com/snippets/making-use-of-settings-json/) file.
 2. Assign that domain and the token we created to a new variable `url` which represents the URL we'll send to our users.
-3. Compiles an HTML templtae using the [meteorhacks:ssr](https://github.com/meteorhacks/meteor-ssr) package (includeed in Base), returning an HTML string.
+3. Compiles an HTML templtae using the [meteorhacks:ssr](https://github.com/meteorhacks/meteor-ssr) package (included in Base), returning an HTML string.
 
-Once we have this complete, we make a call to `_sendInvitation` which takes our new user's email and the HTML we just compiled and shoots it off into the cosmos [using the `email` package](http://themeteorchef.com/snippets/using-the-email-package/) we installed earlier. At this point, our user should get an email that looks something like the following after a few minutes:
+Once we have this complete, we make a call to `_sendInvitation` which takes our new user's email and the HTML we just compiled and shoots it off into the cosmos [using the email package](http://themeteorchef.com/snippets/using-the-email-package/) we installed earlier. At this point, our user should get an email that looks something like the following after a few minutes:
 
 <figure>
   <img src="https://tmc-post-content.s3.amazonaws.com/Screen-Shot-2015-10-07-00-39-16.png" alt="Oh boy do I want to go to Bananapolis.">
@@ -702,7 +702,7 @@ Once we have this complete, we make a call to `_sendInvitation` which takes our 
   <p>We haven't covered it here, but you'll want to make sure to <a href="http://themeteorchef.com/snippets/using-the-email-package/#tmc-configuration">set up your MAIL_URL</a> environment variable to ensure Meteor actually sends your email.</p>
 </div>
 
-Awesome. Sweet. Killer. Rad. Now that we've got our email out in the wild, let's wire up the template where our user's actually _accept_ invitations.
+Awesome. Sweet. Killer. Rad. Now that we've got our email out in the wild, let's wire up the template where our users actually _accept_ invitations.
 
 ### Accepting invitations
 Back on the client, we've already got a route set up that we're sending our users to at `http://localhost:3000/invite/:token`. Let's look at the companion template for this route real quick to see how our invitees will set up their accounts.
@@ -860,7 +860,7 @@ Meteor.methods({
 });
 ```
 
-Following a common thread, here. We do wee bit of `check()`ing and then call to another module on the server side, `acceptInvitation`, passing our `user` document along.
+Following a common thread, here. We do a wee bit of `check()`ing and then call to another module on the server side, `acceptInvitation`, passing our `user` document along.
 
 <p class="block-header">/server/modules/accept-invitation.js</p>
 
@@ -906,7 +906,7 @@ Modules.server.acceptInvitation = accept;
 
 Next, we create a new user in the database, passing the `email` and hashed `password` we received from the client. Finally, we update our new user with the role that we assigned to them in the dashboard. Last but not least for tidyness sake, we make their invitation go bye-bye! It's of no use to us at this point.
 
-And...that's it! At this point we technically have a working invitation and sign up flow and a way to manage our users. But wait! Don't get too excited. Remember that we've got a little bit of work to do in our router to make sure user's are getting sent to the right places. Put your hard hat back on.
+And...that's it! At this point we technically have a working invitation and sign up flow and a way to manage our users. But wait! Don't get too excited. Remember that we've got a little bit of work to do in our router to make sure users are getting sent to the right places. Put your hard hat back on.
 
 ### Adding roles to routes
 Oof. This is the tough part. Your pal, TMC, got his butt kicked trying to figure this out. Fair warning: it's not perfect. The reality is that Flow Router is a pretty big paradigm shift in comparison to Iron Router. It's a great tool, but boy does it take some getting used to. Let's look at what we came up with for handling role checking in the routes to control access to different routes based on a user's role. First up: our public routes.
@@ -1015,7 +1015,7 @@ authenticatedRoutes.route( '/managers', {
 [...]
 ```
 
-To things here. We're defining two functions that are called independently: `blockUnauthorizedAdmin` and `blockUnauthorizedManager`. We call the first when we're visting the `/users` route and the second when we're visting the `/managers` route. The idea here is that if a logged in user visits `/users`, we want to ensure that they're an admin user. If they're not, we want to redirect them to their "default" view (i.e. employees are redirected to the `employees` templatea). 
+To things here. We're defining two functions that are called independently: `blockUnauthorizedAdmin` and `blockUnauthorizedManager`. We call the first when we're visting the `/users` route and the second when we're visting the `/managers` route. The idea here is that if a logged in user visits `/users`, we want to ensure that they're an admin user. If they're not, we want to redirect them to their "default" view (i.e. employees are redirected to the `employees` template). 
 
 Here, notice that in each of our functions, we make a call to `Roles.userIsInRole`, passing the "allowed" roles for that route. When we're on `/users`, we want our user to be an `admin` only. When we're on `/managers`, you can be an `admin` or `manager`. Notice that `employees` are open to _all_ logged in users as this is the lowest role level. Almost done! One last thing to point out.
 
