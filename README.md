@@ -1,7 +1,7 @@
 ##### The Meteor Chef
 ###### \#014 - Building a User Admin
 
-In this recipe, we'll learn how to create a user admin panel for an application. We'll learn how to set roles on users, send invitations, and authenticate users with invitation tokens.
+In this recipe, we'll learn how to build a user admin dashboard. We'll build a simple invite system for signing users up, an interface for setting different roles on our users, and showcase how we can rely on roles to control what routes and templates in the application our users can access.
 
 [Read on The Meteor Chef](http://themeteorchef.com/recipes/building-a-user-admin)  
 
