@@ -27,7 +27,14 @@ let _createUsers = ( users ) => {
         userExists = _checkIfUserExists( user.email );
 
     if ( !userExists ) {
-      _createUser( user );
+      let userId  = _createUser( user ),
+          isAdmin = _checkIfAdmin( user.email );
+
+      if ( isAdmin ) {
+        Roles.setUserRoles( userId, 'admin' );
+      } else {
+        Roles.setUserRoles( userId, 'employee' );
+      }
     }
   }
 };
@@ -37,12 +44,20 @@ let _checkIfUserExists = ( email ) => {
 };
 
 let _createUser = ( user ) => {
-  Accounts.createUser({
+  let userId = Accounts.createUser({
     email: user.email,
     password: user.password,
     profile: {
       name: user.name
     }
+  });
+
+  return userId;
+};
+
+let _checkIfAdmin = ( email ) => {
+  return _.find( administrators, ( admin ) => {
+    return admin.email === email;
   });
 };
 

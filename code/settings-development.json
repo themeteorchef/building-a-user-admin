@@ -1,8 +1,6 @@
 {
-  "public": {
-    "key": "value"
-  },
   "private": {
-    "key": "value"
+    "MAIL_URL": "",
+    "domain": "localhost:3000"
   }
 }

@@ -1,0 +1,26 @@
+<template name="invite">
+  <div class="row">
+    {{#with invitation}}
+    <div class="col-xs-12 col-sm-6 col-md-4">
+      <h3 class="page-header">Accept Invitation</h3>
+      <form id="accept-invitation">
+        <div class="form-group">
+          <label for="emailAddress">Email Address</label>
+          <input disabled type="email" name="emailAddress" class="form-control" placeholder="Email Address" value="{{email}}">
+        </div>
+        <div class="form-group">
+          <label for="password"><span class="pull-left">Password</span></label>
+          <input type="password" name="password" class="form-control" placeholder="Password">
+        </div>
+        <div class="form-group">
+          <input type="submit" class="btn btn-success" value="Create Account">
+        </div>
+      </form>
+    </div>
+    {{else}}
+      <div class="col-xs-12">
+        <p class="alert alert-warning">Sorry, doesn't look like this invite is valid cowpoke.</p>
+      </div>
+    {{/with}}
+  </div>
+</template>

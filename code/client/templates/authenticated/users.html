@@ -1,0 +1,60 @@
+<template name="users">
+  {{#if isInRole 'admin'}}
+    {{> sendInvitationModal}}
+
+    <h4 class="page-header">Users</h4>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Email Address</th>
+          <th class="text-center">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each users}}
+          <tr>
+            <td class="text-left text-middle">{{#if isCurrentUser _id}}<label class="label label-success">You!</label>{{/if}} {{emails.[0].address}}</td>
+            <td>
+              <select {{disableIfAdmin _id}} name="userRole" class="form-control">
+                <option selected="{{selected roles.[0] 'admin'}}" value="admin">Admin</option>
+                <option selected="{{selected roles.[0] 'manager'}}" value="manager">Manager</option>
+                <option selected="{{selected roles.[0] 'employee'}}" value="employee">Employee</option>
+              </select>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class="page-header clearfix">
+      <h4 class="pull-left">Invitations</h4>
+      <button class="btn btn-success pull-right" data-toggle="modal" data-target="#send-invitation-modal">Send Invitation</button>
+    </div>
+    {{#if hasInvitations}}
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Email Address</th>
+            <th class="text-center">Type</th>
+            <th class="text-center">Date Sent</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each invitations}}
+            <tr>
+              <td class="text-left text-middle">{{email}}</td>
+              <td class="text-center text-middle">{{role}}</td>
+              <td class="text-center text-middle">{{humanDate date}}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-danger revoke-invite">Revoke</button>
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <p class="alert alert-warning">No open invitations.</p>
+    {{/if}}
+  {{/if}}
+</template>
