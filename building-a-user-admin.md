@@ -862,14 +862,181 @@ Meteor.methods({
 
 Following a common thread, here. We do wee bit of `check()`ing and then call to another module on the server side, `acceptInvitation`, passing our `user` document along.
 
-<p class="block-header">/path</p>
+<p class="block-header">/server/modules/accept-invitation.js</p>
 
 ```javascript
+let accept = ( options ) => {
+  var invite = _getInvitation( options.token );
+  var user   = _createUser( options );
 
+  _addUserToRole( user, invite.role );
+  _deleteInvite( invite._id );
+
+  return user;
+};
+
+let _createUser = ( options ) => {
+  var userId = Accounts.createUser( { email: options.email, password: options.password } );
+
+  if ( userId ) {
+    return userId;
+  }
+};
+
+let _getInvitation = ( token ) => {
+  var invitation = Invitations.findOne( { "token": token } );
+
+  if ( invitation ) {
+    return invitation;
+  }
+};
+
+let _deleteInvite = ( invite ) => {
+  Invitations.remove( { "_id": invite } );
+};
+
+let _addUserToRole = ( user, role ) => {
+  Roles.setUserRoles( user, role );
+};
+
+Modules.server.acceptInvitation = accept;
 ```
 
+[Extract till you drop](https://sites.google.com/site/unclebobconsultingllc/one-thing-extract-till-you-drop)! Here, we have a bunch of tiny little functions that act as a trail of breadcrumbs to our final desitation: a new user. First, we pluck the invitation out of the database using the token we received from the client. 
+
+Next, we create a new user in the database, passing the `email` and hashed `password` we received from the client. Finally, we update our new user with the role that we assigned to them in the dashboard. Last but not least for tidyness sake, we make their invitation go bye-bye! It's of no use to us at this point.
+
+And...that's it! At this point we technically have a working invitation and sign up flow and a way to manage our users. But wait! Don't get too excited. Remember that we've got a little bit of work to do in our router to make sure user's are getting sent to the right places. Put your hard hat back on.
+
 ### Adding roles to routes
-### Adding roles to templates
-### Wiring up the users dashboard
-### Sending invitations
-### Accepting invitations
+Oof. This is the tough part. Your pal, TMC, got his butt kicked trying to figure this out. Fair warning: it's not perfect. The reality is that Flow Router is a pretty big paradigm shift in comparison to Iron Router. It's a great tool, but boy does it take some getting used to. Let's look at what we came up with for handling role checking in the routes to control access to different routes based on a user's role. First up: our public routes.
+
+<p class="block-header">/both/routes/public.js</p>
+
+```javascript
+const publicRedirect = ( context, redirect ) => {
+  if ( Meteor.userId() ) {
+    Modules.both.redirectUser( { redirect: redirect } );
+  }
+};
+
+[...]
+```
+
+At the top of our `public.js` file, we find the `publicRedirect` function we passed to our `publicRoutes` group's `triggersEnter` property earlier. Here, what we're trying to say is "when we visit one of these public routes, if there is a logged in user, call `Modules.both.redirectUser` passing the `redirect` instance from Flow Router." Huh? In laymen's (Ryan) terms: if the user is logged in, we want to redirect them _away_ from these public routes. Yeah, much better. Let's take a peek at that module.
+
+<p class="block-header">/both/modules/redirect-users.js</p>
+
+```javascript
+let route = ( options ) => {
+  return options && options.redirect ? _sendUserToDefault( options.redirect ) : _sendUserToDefault();
+};
+
+let _sendUserToDefault = ( redirect ) => {
+  let roles = _getCurrentUserRoles();
+
+  if ( roles[0] === 'admin' )    {
+    _redirectUser( 'users', redirect );
+  }
+
+  if ( roles[0] === 'manager' )  {
+    _redirectUser( 'managers', redirect );
+  }
+
+  if ( roles[0] === 'employee' ) {
+    _redirectUser( 'employees', redirect );
+  }
+};
+
+let _getCurrentUserRoles = () => {
+  return Roles.getRolesForUser( Meteor.userId() );
+};
+
+let _redirectUser = ( path, redirect ) => {
+  if ( redirect ) {
+    redirect( path );
+  } else {
+    FlowRouter.go( FlowRouter.path( path ) );
+  }
+};
+
+Modules.both.redirectUser = route;
+```
+
+Well, it's not _too_ bad. It's not, but it's a bit confusing at first glance. What's happening in here is a bit voodoo. First, we check if our module `Modules.both.redirectUser` is called with any options, and specifically, a `redirect` parameter. If it is, we make a call to our `_sendUserToDefault()` function, passing along the `redirect` value. Inside of `_sendUserToDefault()` we make a call to `Roles.getRolesForUser()` passing the current user's ID. Once we have this value, we try to determine—based on the user's role—where we should send them to. 
+
+The idea here is that if we hit a public route as a logged in user, we want to redirect the user to their "default" view. So, if we're an admin, we want to be redirected to the `users` list. If we're an employee, we want to go to the `employees` page, and so on. To handle the actual routing, inside of `_redirectUser`, we make a decision on whether to use the `redirect()` method (if it was passed), or, to use the `FlowRouter.go()` method, passing the path we passed to each. Holy cow. This `redirect()` vs `FlowRouter.go()` thing is the result of pure experimentation. 
+
+The logic here—as I understand it—is that routes in Flow Router are idempotent, meaning, they run once and _only_ once. As a result, if we call `FlowRouter.go()` for a path once and then try to call it again, it won't work. Conversely, if we're within a `triggersEnter` function and call `redirect( <path> )`, our user is redirected as expected. My thoughts here are that this is a bit much for what it accomplishes, but it _does_ work. 
+
+<div class="note">
+  <h3>Help me understand this? <i class="fa fa-warning"></i></h3>
+  <p>If you're a bit more versed in the ways of the Flow Router, please educate me in the comments so I can get this updated with the clearest solution. Thanks in advance!</p>
+</div>
+
+Okay. Two more steps. Both use this same module so it will go quick. Over to our `authenticated` routes real quick.
+
+<p class="block-header">/both/routes/authenticated.js</p>
+
+```javascript
+const blockUnauthorizedAdmin = ( context, redirect ) => {
+  if ( Meteor.userId() && !Roles.userIsInRole( Meteor.userId(), 'admin' ) ) {
+    Modules.both.redirectUser( { redirect: redirect } );
+  }
+};
+
+const blockUnauthorizedManager = ( context, redirect ) => {
+  if ( Meteor.userId() && !Roles.userIsInRole( Meteor.userId(), [ 'admin', 'manager' ] ) ) {
+    Modules.both.redirectUser( { redirect: redirect } );
+  }
+};
+
+const authenticatedRoutes = FlowRouter.group({
+  name: 'authenticated',
+  triggersEnter: [ authenticatedRedirect ]
+});
+
+authenticatedRoutes.route( '/users', {
+  name: 'users',
+  triggersEnter: [ blockUnauthorizedAdmin ],
+  action() {
+    BlazeLayout.render( 'default', { yield: 'users' } );
+  }
+});
+
+authenticatedRoutes.route( '/managers', {
+  name: 'managers',
+  triggersEnter: [ blockUnauthorizedManager ],
+  action() {
+    BlazeLayout.render( 'default', { yield: 'managers' } );
+  }
+});
+
+[...]
+```
+
+To things here. We're defining two functions that are called independently: `blockUnauthorizedAdmin` and `blockUnauthorizedManager`. We call the first when we're visting the `/users` route and the second when we're visting the `/managers` route. The idea here is that if a logged in user visits `/users`, we want to ensure that they're an admin user. If they're not, we want to redirect them to their "default" view (i.e. employees are redirected to the `employees` templatea). 
+
+Here, notice that in each of our functions, we make a call to `Roles.userIsInRole`, passing the "allowed" roles for that route. When we're on `/users`, we want our user to be an `admin` only. When we're on `/managers`, you can be an `admin` or `manager`. Notice that `employees` are open to _all_ logged in users as this is the lowest role level. Almost done! One last thing to point out.
+
+<p class="block-header">/both/routes/configure.js</p>
+
+```javascript
+[...]
+
+Accounts.onLogin( () => {
+  let currentRoute = FlowRouter.current();
+  if ( currentRoute && currentRoute.route.group.name === 'public' ) {
+    Modules.both.redirectUser();
+  }
+});
+
+[...]
+```
+
+To handle redirects of users when they first login (e.g. when creating an account when they accept their invitation), we watch for the `Accounts.onLogin` method to be called. Inside, if we find that there is a current route and the current route group's name is `public`, we call our `redirectUser` module to punt the user to their default view.
+
+Phew! Hopefully this routing part didn't kill your joy. We're done! With this in place, we now have a complete user invitation system with an admin panel. Tip your cowboy hat to the west, spit your chew, and shout a yeehaw at the blazing sun, cowpoke.
+
+### Wrap Up & Summary
+In this recipe, we learned how to create a user admin dashboard. We learned how to create an invitation system that allowed us to invite users via email using unique tokens, how to manage those users after they've joined, and how to route users around our application based on their roles.
