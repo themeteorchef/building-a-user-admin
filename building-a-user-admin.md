@@ -325,16 +325,24 @@ Next, we set up a table for displaying our users list with two columns: "Email A
 
 ```javascript
 Meteor.publish( 'users', function() {
-  return [
-    Meteor.users.find( {}, { fields: { "emails.address": 1, "roles": 1 } } ),
-    Invitations.find( {}, { fields: { "email": 1, "role": 1, "date": 1 } } )
-  ];
+  let isAdmin = Roles.userIsInRole( this.userId, 'admin' );
+
+  if ( isAdmin ) {
+    return [
+      Meteor.users.find( {}, { fields: { "emails.address": 1, "roles": 1 } } ),
+      Invitations.find( {}, { fields: { "email": 1, "role": 1, "date": 1 } } )
+    ];
+  } else {
+    return null;
+  }
 });
 ```
 
-We're keeping this pretty simple. Here, we define a publication called `users` to denote that this publication is meant for subscription in our `users` template. Inside, we rely on Meteor's ability to return multiple cursors from a publication using an array. Here, we define two cursors: one on our `Meteor.users` collection and another on `Invitations`. The first goal here is to get back all of the users in our application with just their `emails` and `roles` fields intact. 
+We're keeping this pretty simple. Here, we define a publication called `users` to denote that this publication is meant for subscription in our `users` template. To be safe, we first make sure to check that the currently logged in user is in the `admin` role. If they are, we return some data. If not, we return `null`. This prevents non-admin user from popping open their console and calling `Meteor.subscribe( 'users' )`, giving them full access to our data.
 
-Note, because we intend to subscribe to this publication from our `users` template, this is safe because we _do_ want administrators in our application to have access to all users. We need to be careful, then, to _not_ subscribe to this publication when a user hasn't been properly authenticated. Just after this, we call to find all of the `Invitations` in our application, grabbing only the `email`, `role`, and `date` fields. Once this in place, we'll be able to subscribe to all of the data we need for our users template. In fact, let's get that squared away now!
+If our check passes, we rely on Meteor's ability to return multiple cursors from a publication using an array. Here, we define two cursors: one on our `Meteor.users` collection and another on `Invitations`. The first goal here is to get back all of the users in our application with just their `emails` and `roles` fields intact. 
+
+Just after this, we call to find all of the `Invitations` in our application, grabbing only the `email`, `role`, and `date` fields. Once this in place, we'll be able to subscribe to all of the data we need for our users template. In fact, let's get that squared away now!
 
 <p class="block-header">/client/templates/authenticated/users.js</p>
 
