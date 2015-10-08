@@ -456,7 +456,7 @@ Template.users.events({
 
 Nothing too crazy. First, we define our event to be called whenever the `change` event fires on the `[name="userRole"]` element (our `<select></select>`). Inside, we grab the value of the current selected option in the `<select></select>`. From there, we make a quick call to a method we've defined on the server, `setRoleOnUser`, passing `this._id`—the `_id` of the current element in the list, or, the user we're making the change to—and the `role` we grabbed from the `<select></select>`. With this, up to the server we go!
 
-<p class="block-header">/path</p>
+<p class="block-header">/both/methods/update/users.js</p>
 
 ```javascript
 Meteor.methods({
