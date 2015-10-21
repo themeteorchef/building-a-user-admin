@@ -715,7 +715,7 @@ Awesome. Sweet. Killer. Rad. Now that we've got our email out in the wild, let's
 ### Accepting invitations
 Back on the client, we've already got a route set up that we're sending our users to at `http://localhost:3000/invite/:token`. Let's look at the companion template for this route real quick to see how our invitees will set up their accounts.
 
-<p class="block-header">/path</p>
+<p class="block-header">/client/templates/public/invite.html</p>
 
 ```markup
 <template name="invite">
