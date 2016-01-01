@@ -96,21 +96,21 @@ Next, we make sure to lock down database collections on the client. Here, we set
 
 To save face, we can "lock down" all of our rules when we define our collection to prevent any client-side database operations from taking place. This means that when we interact with the database, we're required to do it from the server (a trusted environment) via methods.
 
-Last up, we define a schema for our collection [using the aldeed:collection2 package](http://themeteorchef.com/snippets/using-the-collection2-package/). Here, we specify the exact structure of the data we plan to insert into our collection along with the _types_ (e.g. `String`) those pieces of data will use. We do this because it helps us to block unwanted data from being added to the database.
+Last up, we define a schema for our collection [using the aldeed:collection2 package](https://themeteorchef.com/snippets/using-the-collection2-package/). Here, we specify the exact structure of the data we plan to insert into our collection along with the _types_ (e.g. `String`) those pieces of data will use. We do this because it helps us to block unwanted data from being added to the database.
 
 For example, if we attempt to call `Invitations.insert( { taco: "vegetarian" } );`, the insert would fail because `taco` is not a field defined in our schema. Conversely, if we were to call `Invitations.insert( { email: 123456 } );` instead, our insert would _also_ fail because the `email` field is expecting a `String` value, not a `Number` value. Making sense?
 
 At the bottom of our file, we use the `attachSchema` method we get from the `collection2` package to assign the schema we defined above to our collection. Sweet! With this in place, our collection is all set up. We're going to put this on the shelf for now, though, and focus on setting up our routes. Seriously? Yes. Don't worry, this is going to be...interesting. Prepare to be amused!
 
 ### Setting up our routes
-For this recipe, we're relying on the latest version of [Base](http://themeteorchef.com/base), the starter kit used for recipes on The Meteor Chef. Before `v3.0.0` of the kit, we relied on [Iron Router](https://github.com/iron-meteor/iron-router) for defining our routes. Now—keeping in stride with the Meteor community—Base relies on [Flow Router](http://themeteorchef.com/snippets/client-side-routing-with-flow-router). 
+For this recipe, we're relying on the latest version of [Base](https://themeteorchef.com/base), the starter kit used for recipes on The Meteor Chef. Before `v3.0.0` of the kit, we relied on [Iron Router](https://github.com/iron-meteor/iron-router) for defining our routes. Now—keeping in stride with the Meteor community—Base relies on [Flow Router](https://themeteorchef.com/snippets/client-side-routing-with-flow-router). 
 
 Flow Router is a bit different from Iron Router in that it takes a more minimalist approach to routing. This means that things like rendering templates and defining `{{pathFor}}` helpers are up to us. Don't let that spook ya. The bulk of the work has already been done as a part of Base, but we'll step through setting up routes here and talking about how they work. 
 
 First, we're going to split our routes into two groups: `public` and `authenticated`. Our `public` routes will be those accessible to anyone who visits our application. Our `authenticated` routes, on the other hand, will only be accessible to users that are logged in. Going _even further_, we'll also set up a bit of authentication in the route using the `roles` package we installed earlier to control which logged in users can access which `authenticated` routes. Helmet on? Seatbelt fastened? Vroom.
 
 #### Public routes
-For our recipe, we only need to add one public route ([several others come stock with Base](http://themeteorchef.com/base/routing/)).
+For our recipe, we only need to add one public route ([several others come stock with Base](https://themeteorchef.com/base/routing/)).
 
 <p class="block-header">/both/routes/public.js</p>
 
@@ -150,7 +150,7 @@ As part of the design philosophy behind Flow Router, the intent was to separate 
   </div>
 </template>
 ```
-To handle our rendering, Flow Router relies on Meteor's [dynamic templates](http://themeteorchef.com/snippets/using-dynamic-templates) feature. Notice that here, we simply specify a `template` property and set it equal to `yield`. What this translates to is whatever template we assign to the `yield` zone in our route's `action()` method will be rendered in place of this `{{> Template.dynamic}}` include. Seeing the flow (no pun intended)? With this in place, whenever we visit `http://localhost:3000/invite/:token`, we'll see our `invite` template rendered. Cool! Next, let's take a look at our `authenticated` routes.
+To handle our rendering, Flow Router relies on Meteor's [dynamic templates](https://themeteorchef.com/snippets/using-dynamic-templates) feature. Notice that here, we simply specify a `template` property and set it equal to `yield`. What this translates to is whatever template we assign to the `yield` zone in our route's `action()` method will be rendered in place of this `{{> Template.dynamic}}` include. Seeing the flow (no pun intended)? With this in place, whenever we visit `http://localhost:3000/invite/:token`, we'll see our `invite` template rendered. Cool! Next, let's take a look at our `authenticated` routes.
 
 #### Authenticated routes
 For our `authenticated` routes, we're going to follow a similar pattern to our `public` routes. Let's take a look.
@@ -194,7 +194,7 @@ Notice that aside from our `action()` method's, on our `users` and `managers` ro
 Okay, with these in place, we're ready to start working with our users and get our first taste of using the `roles` package. To get started there, we're going to handle adding some administrative and test users to our app so that we can get around without the need for a sign up page (or adding users in the terminal).
 
 ### Adding administrators and test users
-Most of our work here is already done for us as a part of [Base](http://themeteorchef.com/base). Aren't I nice? Truthfully, we only need to make two small edits to what's included. Let's take a look.
+Most of our work here is already done for us as a part of [Base](https://themeteorchef.com/base). Aren't I nice? Truthfully, we only need to make two small edits to what's included. Let's take a look.
 
 <p class="block-header">/server/modules/generate-accounts.js</p>
 
@@ -248,7 +248,7 @@ Here, we make a check using another function `_checkIfAdmin` that looks in the `
 
 <div class="note">
   <h3>What's with this pattern? <i class="fa fa-warning"></i></h3>
-  <p>You may be wondering why our code is split up into little functions like this. Here, we're relying on the <a href="http://themeteorchef.com/snippets/using-the-module-pattern-with-meteor">module pattern</a> to simplify our code and make it a bit easier to read. Doing this, it makes it much easier to both write and read our code as a series of "steps" instead of one big ball of code. You don't have to do this, but it's a handy tool to master if you find your code getting a bit squirrely.</p>
+  <p>You may be wondering why our code is split up into little functions like this. Here, we're relying on the <a href="https://themeteorchef.com/snippets/using-the-module-pattern-with-meteor">module pattern</a> to simplify our code and make it a bit easier to read. Doing this, it makes it much easier to both write and read our code as a series of "steps" instead of one big ball of code. You don't have to do this, but it's a handy tool to master if you find your code getting a bit squirrely.</p>
 </div>
 
 With this in place, let's start to focus on our templates. There's just one that's complicated, the others will just act as placeholders.
@@ -259,7 +259,7 @@ We have four templates we need to set up: `users`, `managers`, `employees`, and 
 #### The easy templates
 To showcase our authentication working later, we're going to need to set up two templates now for users that will be assigned to the `manager` and `employee` roles. Just six lines of code between them. Let's take a look.
 
-<p class="block-header">/clients/templates/authenticated/employees.html</p>
+<p class="block-header">/client/templates/authenticated/employees.html</p>
 
 ```markup
 <template name="employees">
@@ -267,7 +267,7 @@ To showcase our authentication working later, we're going to need to set up two 
 </template>
 ```
 
-<p class="block-header">/clients/templates/authenticated/managers.html</p>
+<p class="block-header">/client/templates/authenticated/managers.html</p>
 
 ```markup
 <template name="managers">
@@ -482,7 +482,7 @@ Meteor.methods({
   }
 });
 ```
-Super easy! Passing our arguments object over as `options`, we do a quick [`check()`](http://themeteorchef.com/snippets/using-the-check-package/) to make sure the data we're getting from the client is what we expect. Next, we simply call `Roles.setUserRoles` to set the selected role on the user that we passed over from the client. Boom! With this, our user is updated to the new role. To make sure, pop back over to the `users` template, change a user's role and then give the page a refesh. If all is well, the change should stick!
+Super easy! Passing our arguments object over as `options`, we do a quick [`check()`](https://themeteorchef.com/snippets/using-the-check-package/) to make sure the data we're getting from the client is what we expect. Next, we simply call `Roles.setUserRoles` to set the selected role on the user that we passed over from the client. Boom! With this, our user is updated to the new role. To make sure, pop back over to the `users` template, change a user's role and then give the page a refesh. If all is well, the change should stick!
 
 <figure>
   <img src="https://tmc-post-content.s3.amazonaws.com/Screen-Recording-2015-10-07-00-03-35.gif" alt="Changing the user's role.">
@@ -690,15 +690,15 @@ let _sendInvitation = ( email, content ) => {
 Modules.server.sendInvitation = invitation;
 ```
 
-A handful of steps, but nothing too scary. First, again, we're relying on the [module pattern](http://themeteorchef.com/snippets/using-the-module-pattern-with-meteor) to make our multi-step process of creating and sending an invitation a little easier to read. First, we take the options we passed to our `Modules.server.sendInvitation` call and send them straight to the `Invitations` collection. Here, we're creating the actual invitation—or document in the `Invitations` collection—that we'll send to the user. 
+A handful of steps, but nothing too scary. First, again, we're relying on the [module pattern](https://themeteorchef.com/snippets/using-the-module-pattern-with-meteor) to make our multi-step process of creating and sending an invitation a little easier to read. First, we take the options we passed to our `Modules.server.sendInvitation` call and send them straight to the `Invitations` collection. Here, we're creating the actual invitation—or document in the `Invitations` collection—that we'll send to the user. 
 
 Next, we call to a function `_prepareEmail` which we use to do two three things:
 
-1. Grab the `domain` value from our [`settings-<environment>.js`](http://themeteorchef.com/snippets/making-use-of-settings-json/) file.
+1. Grab the `domain` value from our [`settings-<environment>.js`](https://themeteorchef.com/snippets/making-use-of-settings-json/) file.
 2. Assign that domain and the token we created to a new variable `url` which represents the URL we'll send to our users.
 3. Compiles an HTML templtae using the [meteorhacks:ssr](https://github.com/meteorhacks/meteor-ssr) package (included in Base), returning an HTML string.
 
-Once we have this complete, we make a call to `_sendInvitation` which takes our new user's email and the HTML we just compiled and shoots it off into the cosmos [using the email package](http://themeteorchef.com/snippets/using-the-email-package/) we installed earlier. At this point, our user should get an email that looks something like the following after a few minutes:
+Once we have this complete, we make a call to `_sendInvitation` which takes our new user's email and the HTML we just compiled and shoots it off into the cosmos [using the email package](https://themeteorchef.com/snippets/using-the-email-package/) we installed earlier. At this point, our user should get an email that looks something like the following after a few minutes:
 
 <figure>
   <img src="https://tmc-post-content.s3.amazonaws.com/Screen-Shot-2015-10-07-00-39-16.png" alt="Oh boy do I want to go to Bananapolis.">
@@ -707,7 +707,7 @@ Once we have this complete, we make a call to `_sendInvitation` which takes our 
 
 <div class="note">
   <h3>Don't forget your MAIL_URL <i class="fa fa-warning"></i></h3>
-  <p>We haven't covered it here, but you'll want to make sure to <a href="http://themeteorchef.com/snippets/using-the-email-package/#tmc-configuration">set up your MAIL_URL</a> environment variable to ensure Meteor actually sends your email.</p>
+  <p>We haven't covered it here, but you'll want to make sure to <a href="https://themeteorchef.com/snippets/using-the-email-package/#tmc-configuration">set up your MAIL_URL</a> environment variable to ensure Meteor actually sends your email.</p>
 </div>
 
 Awesome. Sweet. Killer. Rad. Now that we've got our email out in the wild, let's wire up the template where our users actually _accept_ invitations.
@@ -843,7 +843,7 @@ Template.invite.events({
 
 With our subscription in place, we wire up a helper `invitation` to a `findOne()` call. This is what we're passing to our `{{#with}}` block in our template. If we find an invite, this will return it to the template. Last but not least, the big show! When our form is submitted, we grab the user's `email`, `password`, and `token`, and pass it up to the server via the `acceptInvitation` method. A few notes here. First, notice that for our `password` parameter, we're wrapping the value we get from our password field in a call to `Accounts._hashPassword()`. What's this? This is a private function in Meteor that we can use to hash the password on the client before sending it to the server. 
 
-I was tipped of about this by a fellow reader [Mz103](http://themeteorchef.com/recipes/adding-a-beta-invitation-system-to-your-meteor-application/#comment-2264039525). The basic idea, here, is that because we're sending our user's credentials over the wire to the server, it's smart to hash their password first so it's not going over the connection as plain text. A neat security trick!
+I was tipped of about this by a fellow reader [Mz103](https://themeteorchef.com/recipes/adding-a-beta-invitation-system-to-your-meteor-application/#comment-2264039525). The basic idea, here, is that because we're sending our user's credentials over the wire to the server, it's smart to hash their password first so it's not going over the connection as plain text. A neat security trick!
 
 Additionally, notice that in the success state of our `acceptInvitation` call's callback, we log the user in with the email and password value passed to us. If all goes well up on the server, our user will be logged into their spiffy new account. Let's jump up to the server now to see how this ties together.
 
